@@ -1,50 +1,54 @@
 let canvas;
 let ctx;
-let mazeHeight = 10;
-let mazeWidth = 10;
-let x1 = 2;
-let y1 = 2;
-let x2 = 50;
-let y2 = 50;
+
+/* Customized variables */
+let cellSize = 50;
+let mazeHeight = 5;
+let mazeWidth = 4;
+/* -------------------- */
+let x1 = cellSize/10;
+let y1 = cellSize/10;
+let x2 = cellSize - (cellSize/10)*2;
+let y2 = cellSize - (cellSize/10)*2;
 
 let oppx = {"N": 0, "E": 1, "S": 0, "W": -1};
 let oppy = {"N": -1, "E": 0, "S": 1, "W": 0};
 let opp = {"N": "S", "E": "W", "S": "N", "W": "E"};
-let coord = {"N": 0, "E": 1, "S": 2, "W": 3};
-let positions = [...Array(mazeHeight)].map(e => Array(mazeWidth).fill(0));
-let set = [...Array(mazeHeight)].map(e => Array(mazeWidth).fill(0));
+/* using the x,y major order (or Column major order) != from memory and C (Row major order) */
+let positions = [...Array(mazeWidth)].map(e => Array(mazeHeight).fill(0));
+let set = [...Array(mazeWidth)].map(e => Array(mazeHeight).fill(0));
 let edges = new Array();
 
 let maze; //do not like this
 let icon; //do not like this
 
-let idg = 0;
-
 
 
 document.addEventListener("DOMContentLoaded", SetupCanvas);
 
-function SetupCanvas() {
+function SetupCanvas() { //main
     canvas = document.getElementById("myCanvas");
     ctx = canvas.getContext("2d");
-    canvas.height = 549;
-    canvas.width = 549;
+    canvas.height = cellSize * mazeHeight;
+    canvas.width = cellSize * mazeWidth;
+
+    console.log(positions.length);
+
+    /*
+    maze = new Maze(mazeHeight, mazeWidth);
+    maze.init();
+    icon = new Icon();
+    icon.init();
+    */
 
     initPos();
     initSet();
     initEdges();
 
     maze = new Maze(mazeHeight, mazeWidth);
+    maze.generate();
     icon = new Icon();
-
-    positions[0][0][1] = 1;
-    positions[1][0][3] = 1;
-    maze.clearWall(0, 0, 1);
-    kruskalAlgorithm();
-
-    debugFunc();
-
-    console.log("gg");
+    icon.drawIcon();
 }
 
 /*_____________________ Classes _______________________*/
@@ -52,43 +56,93 @@ class Maze {
     constructor(height, width) {
         this.height = height;
         this.width = width;
-
-        drawGrid();
-        this.mazeGenerator();
-        //this.clearWall(0, 0, 2);
-        // generate walls
-            //
-        // draw walls
-            // go to each position
-            // draw the walls for that position
-    }
-
-    mazeGenerator() {
         
+        /* TODO */
+        this.positionsx;
+        this.setx;
+        this.edgesx;
     }
 
-    clearWall(x, y, side) {
+    generate() {
+        this.kruskalAlgorithm();
+        for(let i = 0; i < positions.length; ++i) {
+            for(let j = 0; j < positions[i].length; ++j) {
+                if(positions[i][j]["N"] == 0) {
+                    this.drawWall(i, j, "N");
+                }
+                if(positions[i][j]["E"] == 0) {
+                    this.drawWall(i, j, "E");
+                }
+                if(positions[i][j]["S"] == 0) {
+                    this.drawWall(i, j, "S");
+                }
+                if(positions[i][j]["W"] == 0) {
+                    this.drawWall(i, j, "W");
+                }
+            }
+        }
+    }
 
+    clean() {
+        for(let i = 0; i < this.height; ++i) {
+
+        }
+        for(let i = 0; i < this.width; ++i) {
+
+        }
+    }
+
+    drawWall(x, y, side) {
         ctx.beginPath();
-        ctx.strokeStyle = 'white';
+        ctx.strokeStyle = 'black';
         ctx.lineWidth = '3';
-        if(side == 0) {
-            ctx.moveTo(55*x , 55*y);
-            ctx.lineTo(55*(x+1) , 55*y);
-        }
-        else if(side == 1) {
-            ctx.moveTo(55*(x+1) , 55*y);
-            ctx.lineTo(55*(x+1) , 55*(y+1));
-        }
-        else if(side == 2) {
-            ctx.moveTo(55*x , 55*(y+1));
-            ctx.lineTo(55*(x+1) , 55*(y+1));
-        }
-        else if(side == 3) {
-            ctx.moveTo(55*x , 55*y);
-            ctx.lineTo(55*x , 55*(y+1));
+        switch(side) {
+            case "N":
+                ctx.moveTo(cellSize*x -1, cellSize*y);
+                ctx.lineTo(cellSize*(x+1), cellSize*y);
+                break;
+            case "E":
+                ctx.moveTo(cellSize*(x+1), cellSize*y-1);
+                ctx.lineTo(cellSize*(x+1), cellSize*(y+1));
+                break;
+            case "S":
+                ctx.moveTo(cellSize*x, cellSize*(y+1));
+                ctx.lineTo(cellSize*(x+1) +1, cellSize*(y+1));
+                break;
+            case "W":
+                ctx.moveTo(cellSize*x, cellSize*y);
+                ctx.lineTo(cellSize*x, cellSize*(y+1) +1);
+                break;
+            default:
+                console.log("HOW?")
+                break;
         }
         ctx.stroke();
+    }
+
+    kruskalAlgorithm() {
+        let x, y, ox, oy, set1, set2;
+        for(let i = 0; i < edges.length; ++i) {
+            x = edges[i].x;
+            y = edges[i].y;
+            ox = edges[i].x + oppx[edges[i].dir];
+            oy = edges[i].y + oppy[edges[i].dir];
+    
+            set1 = set[x][y];
+            set2 = set[ox][oy];
+            if(!(set1.connected(set2))) {
+                set1.connect(set2);
+                positions[x][y][edges[i].dir] = 1;
+                positions[ox][oy][opp[edges[i].dir]] = 1;
+            }
+        }
+    }
+
+    checkWinner() {
+        if(icon.x == maze.width-1 && icon.y == maze.height-1)
+            document.getElementById("win").innerHTML = "Winner";
+        else
+            document.getElementById("win").innerHTML = "";
     }
 }
 
@@ -116,24 +170,6 @@ class Tree {
     }
 }
 
-function kruskalAlgorithm() {
-    let x, y, ox, oy;
-    for(let i = 0; i < edges.length; ++i) {
-        x = edges[i].x;
-        y = edges[i].y;
-        ox = edges[i].x + oppx[edges[i].dir];
-        oy = edges[i].y + oppy[edges[i].dir];
-
-        set1 = set[x][y];
-        set2 = set[ox][oy];
-        if(!(set1.connected(set2))) {
-            set1.connect(set2);
-            positions[x][y][coord[edges[i].dir]] = 1;
-            positions[ox][oy][coord[opp[edges[i].dir]]] = 1;
-            maze.clearWall(x, y, coord[edges[i].dir]);
-        }
-    }
-}
 
 class Edge {
     constructor(x, y, dir) {
@@ -144,19 +180,10 @@ class Edge {
 }
 
 
-class Node {
-    constructor() {
-        this.edges = new Array(2);
-    }
-}
-
-
 class Icon {
     constructor() {
         this.x = 0;
         this.y = 0;
-
-        this.drawIcon();
     }
 
     drawIcon() {
@@ -165,7 +192,7 @@ class Icon {
         //ctx.fillRect(x1+this.x*55, y1+this.y*55, x2+this.x*55, y2+this.y*55);
 
         ctx.fillStyle = 'blue';
-        ctx.fillRect(x1, y1+55, x2, y2);
+        ctx.fillRect(x1, y1+cellSize, x2, y2);
     }
 
     moveIcon() {
@@ -179,47 +206,93 @@ class Icon {
     }
 
     moveUp() {
-        if(this.y!=0 && positions[this.x][this.y][0]) {
+        if(this.y!=0 && positions[this.x][this.y]["N"]) {
             --this.y;
             this.deleteIcon();
-            y1 -= 55;
+            y1 -= cellSize;
             this.moveIcon();
         }
+        maze.checkWinner();
     }
 
     moveRight() {
-        if(this.x == mazeHeight - 1 && this.y == mazeWidth - 1) {
-            document.getElementById("win").innerHTML = "Winner";
-            console.log("Winner");
-        }
-        if(this.x!=mazeWidth-1 && positions[this.x][this.y][1]) {
+        //if(this.x == mazeWidth - 2 && this.y == mazeHeight - 1) {
+        //    document.getElementById("win").innerHTML = "Winner";
+            /* reset 
+            // pop up message: "winner"
+            // delay
+            // automatically closes
+            this.x = 0;
+            this.y = 0;
+            x1 = cellSize/10;
+            y1 = cellSize/10;
+            x2 = cellSize - (cellSize/10)*2;
+            y2 = cellSize - (cellSize/10)*2;
+
+            positions = [...Array(mazeHeight)].map(e => Array(mazeWidth).fill(0));
+            set = [...Array(mazeHeight)].map(e => Array(mazeWidth).fill(0));
+            edges = new Array();
+
+            initPos();
+            initSet();
+            initEdges();
+
+            maze.generate();
+            /* reset */
+        //}
+        if(this.x!=mazeWidth-1 && positions[this.x][this.y]["E"]) {
             ++this.x;
             this.deleteIcon();
-            x1 += 55;
+            x1 += cellSize;
             this.moveIcon();
         }
+        maze.checkWinner();
     }
 
     moveDown() {
-        if(this.x == mazeHeight - 1 && this.y == mazeWidth - 1) {
-            document.getElementById("win").innerHTML = "Winner";
-            console.log("Winner");
-        }
-        if(this.y!=mazeHeight-1 && positions[this.x][this.y][2]) {
+        //if(this.x == mazeWidth - 1 && this.y == mazeHeight - 2) {
+        //    document.getElementById("win").innerHTML = "Winner";
+            /* reset
+            // pop up message: "winner"
+            // delay
+            // automatically closes
+            this.x = 0;
+            this.y = 0;
+            x1 = cellSize/10;
+            y1 = cellSize/10;
+            x2 = cellSize - (cellSize/10)*2;
+            y2 = cellSize - (cellSize/10)*2;
+
+            positions = [...Array(mazeHeight)].map(e => Array(mazeWidth).fill(0));
+            set = [...Array(mazeHeight)].map(e => Array(mazeWidth).fill(0));
+            edges = new Array();
+
+            initPos();
+            initSet();
+            initEdges();
+
+            //maze.clean();
+            maze.generate();
+            /* reset */
+        //}
+        if(this.y!=mazeHeight-1 && positions[this.x][this.y]["S"]) {
             ++this.y;
             this.deleteIcon();
-            y1 += 55;
+            y1 += cellSize;
             this.moveIcon();
         }
+        maze.checkWinner();
     }
 
     moveLeft() {
-        if(this.x!=0 && positions[this.x][this.y][3]) {
+        if(this.x!=0 && positions[this.x][this.y]["W"]) {
+            document.getElementById("win").innerHTML = "";
             --this.x;
             this.deleteIcon();
-            x1 -= 55;
+            x1 -= cellSize;
             this.moveIcon();
         }
+        maze.checkWinner();
     }
     //moveLeft, moveUp, moveRight, moveDown   needs to be refactored later...
 }
@@ -228,7 +301,7 @@ class Icon {
 function initPos() {
     for(var i = 0; i < positions.length; ++i) {
         for(var j = 0; j < positions[i].length; ++j) {
-            positions[i][j] = [...Array(4)].fill(0);
+            positions[i][j] = {"N": 0, "E": 0, "S": 0, "W": 0};
         }
     }
 }
@@ -244,11 +317,12 @@ function initSet() {
 function initEdges() {
     for(var i = 0; i < positions.length; ++i) {
         for(let j = 0; j < positions[i].length; ++j) {
-            if(j>0){
+            if(j>0) {
                 edges.push(new Edge(i, j, "N"));
             }
-            if(i>0)
+            if(i>0) {
                 edges.push(new Edge(i, j, "W"));
+            }
         }
     }
     edges.shuffle();
@@ -257,28 +331,12 @@ function initEdges() {
 Array.prototype.shuffle = function() {
     let m = this.length;
     let i;
-    while (m) {
+    while(m) {
       i = (Math.random() * m--) >>> 0;
       [this[m], this[i]] = [this[i], this[m]]
     }
     return this;
 }
-
-function drawGrid() {
-    ctx.beginPath();
-    ctx.strokeStyle = 'black';
-    ctx.lineWidth = '2';
-    for(var i = 0; i < mazeHeight; i++) {
-        ctx.moveTo(55+i*55, 0);
-        ctx.lineTo(55+i*55, 555);
-    }
-    for(var i = 0; i < mazeWidth; i++) {
-        ctx.moveTo(0, 55+i*55, 0);
-        ctx.lineTo(555, 55+i*55);
-    }
-    ctx.stroke();
-}
-
 
 function debugFunc() {
 
