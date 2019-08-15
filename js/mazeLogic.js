@@ -3,9 +3,9 @@ let ctx;
 
 /* Customized variables */
 let cellSize = 50;
-let mazeHeight = 5;
-let mazeWidth = 4;
-/* -------------------- */
+let mazeHeight = 10;
+let mazeWidth = 10;
+/* ____________________ */
 let x1 = cellSize/10;
 let y1 = cellSize/10;
 let x2 = cellSize - (cellSize/10)*2;
@@ -25,14 +25,13 @@ let icon; //do not like this
 
 
 document.addEventListener("DOMContentLoaded", SetupCanvas);
+document.addEventListener("keydown", keyHandler);
 
 function SetupCanvas() { //main
     canvas = document.getElementById("myCanvas");
     ctx = canvas.getContext("2d");
     canvas.height = cellSize * mazeHeight;
     canvas.width = cellSize * mazeWidth;
-
-    console.log(positions.length);
 
     /*
     maze = new Maze(mazeHeight, mazeWidth);
@@ -94,8 +93,8 @@ class Maze {
 
     drawWall(x, y, side) {
         ctx.beginPath();
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = '3';
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = "3";
         switch(side) {
             case "N":
                 ctx.moveTo(cellSize*x -1, cellSize*y);
@@ -139,8 +138,14 @@ class Maze {
     }
 
     checkWinner() {
-        if(icon.x == maze.width-1 && icon.y == maze.height-1)
+        if(icon.x == maze.width-1 && icon.y == maze.height-1) {
             document.getElementById("win").innerHTML = "Winner";
+            // pop up message: "winner"
+            // delay
+            // automatically closes
+            /* reset */
+            SetupCanvas();
+        }
         else
             document.getElementById("win").innerHTML = "";
     }
@@ -186,115 +191,33 @@ class Icon {
         this.y = 0;
     }
 
-    drawIcon() {
-        ctx.fillStyle = 'black';
+    moveIcon() {
+        ctx.fillStyle = "black";
         ctx.fillRect(x1, y1, x2, y2);
-        //ctx.fillRect(x1+this.x*55, y1+this.y*55, x2+this.x*55, y2+this.y*55);
+    }
 
-        ctx.fillStyle = 'blue';
+    drawIcon() {
+        ctx.fillStyle = "black";
+        ctx.fillRect(x1+cellSize*this.x, y1+cellSize*this.y, x2, y2);
+
+        ctx.fillStyle = "blue";
         ctx.fillRect(x1, y1+cellSize, x2, y2);
     }
 
-    moveIcon() {
-        ctx.fillStyle = 'black';
-        ctx.fillRect(x1, y1, x2, y2);
-    }
-
     deleteIcon() {
-        ctx.fillStyle = 'white';
-        ctx.fillRect(x1, y1, x2, y2);
+        ctx.fillStyle = "white";
+        ctx.fillRect(x1+cellSize*this.x, y1+cellSize*this.y, x2, y2);
     }
 
-    moveUp() {
-        if(this.y!=0 && positions[this.x][this.y]["N"]) {
-            --this.y;
+    move(dir){
+        if(positions[this.x][this.y][dir]) {
             this.deleteIcon();
-            y1 -= cellSize;
-            this.moveIcon();
+            this.x += oppx[dir];
+            this.y += oppy[dir];
+            this.drawIcon();
+            maze.checkWinner();
         }
-        maze.checkWinner();
     }
-
-    moveRight() {
-        //if(this.x == mazeWidth - 2 && this.y == mazeHeight - 1) {
-        //    document.getElementById("win").innerHTML = "Winner";
-            /* reset 
-            // pop up message: "winner"
-            // delay
-            // automatically closes
-            this.x = 0;
-            this.y = 0;
-            x1 = cellSize/10;
-            y1 = cellSize/10;
-            x2 = cellSize - (cellSize/10)*2;
-            y2 = cellSize - (cellSize/10)*2;
-
-            positions = [...Array(mazeHeight)].map(e => Array(mazeWidth).fill(0));
-            set = [...Array(mazeHeight)].map(e => Array(mazeWidth).fill(0));
-            edges = new Array();
-
-            initPos();
-            initSet();
-            initEdges();
-
-            maze.generate();
-            /* reset */
-        //}
-        if(this.x!=mazeWidth-1 && positions[this.x][this.y]["E"]) {
-            ++this.x;
-            this.deleteIcon();
-            x1 += cellSize;
-            this.moveIcon();
-        }
-        maze.checkWinner();
-    }
-
-    moveDown() {
-        //if(this.x == mazeWidth - 1 && this.y == mazeHeight - 2) {
-        //    document.getElementById("win").innerHTML = "Winner";
-            /* reset
-            // pop up message: "winner"
-            // delay
-            // automatically closes
-            this.x = 0;
-            this.y = 0;
-            x1 = cellSize/10;
-            y1 = cellSize/10;
-            x2 = cellSize - (cellSize/10)*2;
-            y2 = cellSize - (cellSize/10)*2;
-
-            positions = [...Array(mazeHeight)].map(e => Array(mazeWidth).fill(0));
-            set = [...Array(mazeHeight)].map(e => Array(mazeWidth).fill(0));
-            edges = new Array();
-
-            initPos();
-            initSet();
-            initEdges();
-
-            //maze.clean();
-            maze.generate();
-            /* reset */
-        //}
-        if(this.y!=mazeHeight-1 && positions[this.x][this.y]["S"]) {
-            ++this.y;
-            this.deleteIcon();
-            y1 += cellSize;
-            this.moveIcon();
-        }
-        maze.checkWinner();
-    }
-
-    moveLeft() {
-        if(this.x!=0 && positions[this.x][this.y]["W"]) {
-            document.getElementById("win").innerHTML = "";
-            --this.x;
-            this.deleteIcon();
-            x1 -= cellSize;
-            this.moveIcon();
-        }
-        maze.checkWinner();
-    }
-    //moveLeft, moveUp, moveRight, moveDown   needs to be refactored later...
 }
 
 /*_____________________ Functions _______________________*/
@@ -338,26 +261,24 @@ Array.prototype.shuffle = function() {
     return this;
 }
 
-function debugFunc() {
-
-}
-
-
-document.addEventListener('keydown', keyHandler);
 
 function keyHandler(e) {
     switch (e.keyCode) {
         case 37:
-            icon.moveLeft();
+            //icon.moveLeft();
+            icon.move("W");
             break;
         case 38:
-            icon.moveUp();
+            //icon.moveUp();
+            icon.move("N");
             break;
         case 39:
-            icon.moveRight();
+            //icon.moveRight();
+            icon.move("E");
             break;
         case 40:
-            icon.moveDown();
+            //icon.moveDown();
+            icon.move("S");
             break;
         default:
             console.log("No function for that key");
