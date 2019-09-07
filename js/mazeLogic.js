@@ -3,8 +3,8 @@ let ctx;
 
 /* Customized variables */
 let cellSize = 50;
-let mazeHeight = 10;
-let mazeWidth = 10;
+let mazeHeight = 20;
+let mazeWidth = 20;
 /* ____________________ */
 let x1 = cellSize/10;
 let y1 = cellSize/10;
