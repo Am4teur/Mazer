@@ -64,8 +64,10 @@ class Maze {
 
     generate() {
         this.kruskalAlgorithm();
+        
         for(let i = 0; i < positions.length; ++i) {
             for(let j = 0; j < positions[i].length; ++j) {
+
                 if(positions[i][j]["N"] == 0) {
                     this.drawWall(i, j, "N");
                 }
