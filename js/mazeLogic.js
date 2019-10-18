@@ -41,7 +41,7 @@ function Timer(time){
     let elapsedTime = time - nextTime;
     if(elapsedTime>100) {
         nextTime = time;
-        maze.drawWall(vec[count][0], vec[count][1], vec[count][2]);
+        maze.delWall(vec[count][0], vec[count][1], vec[count][2]);
         count++;
         if(count >= vec.length) {
             finished = true;
@@ -90,6 +90,7 @@ class Maze {
         this.initPositions();
 
         /* init var set */
+        /* put this variable set inside of kruskal algorithm method because thats the only place that this variable is used */
         this.set = [...Array(mazeWidth)].map(e => Array(mazeHeight));
         this.initSet();
 
@@ -99,68 +100,46 @@ class Maze {
     }
 
     generate() {
+        this.drawGrid();
+
         this.kruskalAlgorithm();
-
-        var vec2 = new Array();
-        for(let i = 0; i < this.positions.length; ++i) {
-            for(let j = 0; j < this.positions[i].length; ++j) {
-
-                if(this.positions[i][j]["N"] == 0) {
-                    vec2.push(i);
-                    vec2.push(j);
-                    vec2.push("N");
-                    vec.push(vec2);
-                    vec2 = new Array();
-                    //this.drawWall(i, j, "N");
-                }
-                if(this.positions[i][j]["E"] == 0) {
-                    vec2.push(i);
-                    vec2.push(j);
-                    vec2.push("E");
-                    vec.push(vec2);
-                    vec2 = new Array();
-                    //this.drawWall(i, j, "E");
-                }
-                if(this.positions[i][j]["S"] == 0) {
-                    vec2.push(i);
-                    vec2.push(j);
-                    vec2.push("S");
-                    vec.push(vec2);
-                    vec2 = new Array();
-                    //this.drawWall(i, j, "S");
-                }
-                if(this.positions[i][j]["W"] == 0) {
-                    vec2.push(i);
-                    vec2.push(j);
-                    vec2.push("W");
-                    vec.push(vec2);
-                    vec2 = new Array();
-                    //this.drawWall(i, j, "W");
-                }
-            }
-        }
     }
 
-    drawWall(x, y, side) {
+    drawGrid() {
         ctx.beginPath();
         ctx.strokeStyle = "black";
         ctx.lineWidth = "3";
-        switch(side) {
+        for(let i = 0; i < this.positions.length+1 ; ++i) {
+            ctx.moveTo(cellSize*i, 0);
+            ctx.lineTo(cellSize*i, cellSize*this.positions.length);
+        }
+        for(let i = 0; i < this.positions[0].length+1 ; ++i) {
+            ctx.moveTo(0, cellSize*i);
+            ctx.lineTo(cellSize*this.positions[0].length, cellSize*i);
+        }
+        ctx.stroke();
+    }
+
+    delWall(x, y, side) {
+        ctx.beginPath();
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = "5";
+        switch(side) { // +2 and -2 is just adjusts, nothing to do with the grid
             case "N":
-                ctx.moveTo(cellSize*x -1, cellSize*y);
-                ctx.lineTo(cellSize*(x+1), cellSize*y);
+                ctx.moveTo(cellSize*x  +2, cellSize*y);
+                ctx.lineTo(cellSize*(x+1) -2, cellSize*y);
                 break;
             case "E":
-                ctx.moveTo(cellSize*(x+1), cellSize*y-1);
-                ctx.lineTo(cellSize*(x+1), cellSize*(y+1));
+                ctx.moveTo(cellSize*(x+1), cellSize*y  +2);
+                ctx.lineTo(cellSize*(x+1), cellSize*(y+1)  -2);
                 break;
             case "S":
-                ctx.moveTo(cellSize*x, cellSize*(y+1));
-                ctx.lineTo(cellSize*(x+1) +1, cellSize*(y+1));
+                ctx.moveTo(cellSize*x  +2, cellSize*(y+1));
+                ctx.lineTo(cellSize*(x+1)  -2, cellSize*(y+1));
                 break;
             case "W":
-                ctx.moveTo(cellSize*x, cellSize*y);
-                ctx.lineTo(cellSize*x, cellSize*(y+1) +1);
+                ctx.moveTo(cellSize*x, cellSize*y  +2);
+                ctx.lineTo(cellSize*x, cellSize*(y+1)  -2);
                 break;
             default:
                 console.log("HOW!?");
@@ -183,6 +162,8 @@ class Maze {
                 set1.connect(set2);
                 this.positions[x][y][this.edges[i].dir] = 1;
                 this.positions[ox][oy][opp[this.edges[i].dir]] = 1;
+
+                vec.push([x, y, this.edges[i].dir]);
             }
         }
     }
@@ -291,12 +272,13 @@ class Icon {
     }
 
     move(dir){
-        if(myMaze.positions[this.x][this.y][dir]) {
+        if(this.myMaze.positions[this.x][this.y][dir]) {
             this.deleteIcon();
             this.x += oppx[dir];
             this.y += oppy[dir];
             this.drawIcon();
-            maze.checkWinner();
+            this.myMaze.checkWinner();
+            finished = false;
         }
     }
 }
@@ -332,14 +314,3 @@ function keyHandler(e) {
             break;
     }
 };
-
-/*
-                var newt = (new Date()).getTime();
-                var step = (new Date()).getTime() + 1000;
-                console.log("(" + i + ", " + j + ") newt: " + newt);
-                console.log("(" + i + ", " + j + ") step: " + step);
-
-                while(step > newt) {
-                    newt = (new Date()).getTime();
-                }
-*/
