@@ -65,17 +65,10 @@ function SetupCanvas() { //main
 
     requestAnimationFrame(Timer);
 
-    /*
     maze = new Maze(mazeHeight, mazeWidth);
     maze.init();
-    icon = new Icon();
-    icon.init();
-    */
-
-    maze = new Maze(mazeHeight, mazeWidth);
-    maze.generate();
     icon = new Icon(maze);
-    icon.drawIcon();
+    icon.init();
 }
 
 /*_____________________ Classes _______________________*/
@@ -99,53 +92,40 @@ class Maze {
         this.initEdges();
     }
 
-    generate() {
+    init() {
         this.drawGrid();
-
         this.kruskalAlgorithm();
     }
 
-    drawGrid() {
-        ctx.beginPath();
-        ctx.strokeStyle = "black";
-        ctx.lineWidth = "3";
-        for(let i = 0; i < this.positions.length+1 ; ++i) {
-            ctx.moveTo(cellSize*i, 0);
-            ctx.lineTo(cellSize*i, cellSize*this.positions.length);
+    drawGrid() { //recheckar bem as coordenadas, deu bem logo a primeira, estranho...
+        ctx.fillStyle = "black";
+        for(let i = 0; i < this.positions.length+1; ++i) {
+            ctx.fillRect(cellSize*i  -2, 0, 4, cellSize*this.positions.length);
         }
-        for(let i = 0; i < this.positions[0].length+1 ; ++i) {
-            ctx.moveTo(0, cellSize*i);
-            ctx.lineTo(cellSize*this.positions[0].length, cellSize*i);
+        for(let i = 0; i < this.positions[0].length+1; ++i) {
+            ctx.fillRect(0, cellSize*i -2, cellSize*this.positions[0].length, 4);
         }
-        ctx.stroke();
     }
 
     delWall(x, y, side) {
-        ctx.beginPath();
-        ctx.strokeStyle = "white";
-        ctx.lineWidth = "5";
+        ctx.fillStyle = "white";
         switch(side) { // +2 and -2 is just adjusts, nothing to do with the grid
             case "N":
-                ctx.moveTo(cellSize*x  +2, cellSize*y);
-                ctx.lineTo(cellSize*(x+1) -2, cellSize*y);
+                ctx.fillRect(cellSize*x  +2, cellSize*y  -2, cellSize  -4, 4);
                 break;
             case "E":
-                ctx.moveTo(cellSize*(x+1), cellSize*y  +2);
-                ctx.lineTo(cellSize*(x+1), cellSize*(y+1)  -2);
+                ctx.fillRect(cellSize*(x+1)  -2, cellSize*y  +2, 4, cellSize  -4);
                 break;
             case "S":
-                ctx.moveTo(cellSize*x  +2, cellSize*(y+1));
-                ctx.lineTo(cellSize*(x+1)  -2, cellSize*(y+1));
+                ctx.fillRect(cellSize*x  +2, cellSize*(y+1)  -2, cellSize  -4, 4);
                 break;
             case "W":
-                ctx.moveTo(cellSize*x, cellSize*y  +2);
-                ctx.lineTo(cellSize*x, cellSize*(y+1)  -2);
+                ctx.fillRect(cellSize*x  -2, cellSize*y  +2, 4, cellSize  -4);
                 break;
             default:
                 console.log("HOW!?");
                 break;
         }
-        ctx.stroke();
     }
 
     kruskalAlgorithm() {
@@ -253,18 +233,20 @@ class Icon {
         this.myMaze = myMaze;
     }
 
-    moveIcon() {
-        ctx.fillStyle = "black";
-        ctx.fillRect(x1, y1, x2, y2);
-    }
-
-    drawIcon() {
+    init() {
         ctx.fillStyle = "black";
         ctx.fillRect(x1+cellSize*this.x, y1+cellSize*this.y, x2, y2);
 
         ctx.fillStyle = "blue";
         ctx.fillRect(x1, y1+cellSize, x2, y2);
     }
+
+    moveIcon() {
+        ctx.fillStyle = "black";
+        ctx.fillRect(x1, y1, x2, y2);
+    }
+
+
 
     deleteIcon() {
         ctx.fillStyle = "white";
@@ -276,7 +258,7 @@ class Icon {
             this.deleteIcon();
             this.x += oppx[dir];
             this.y += oppy[dir];
-            this.drawIcon();
+            this.init(); //check this
             this.myMaze.checkWinner();
             finished = false;
         }
