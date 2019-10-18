@@ -3,8 +3,8 @@ let ctx;
 
 /* Customized variables */
 let cellSize = 50;
-let mazeHeight = 10;
-let mazeWidth = 10;
+let mazeHeight = 8;
+let mazeWidth = 8;
 /* ____________________ */
 let x1 = cellSize/10;
 let y1 = cellSize/10;
@@ -21,6 +21,39 @@ let icon; //do not like this
 
 
 
+var finished = false;
+var isFirstLoop = true;
+var nextTime;
+var vec = new Array();
+var count = 0;
+
+function Timer(time){
+
+    if(!finished) {
+        requestAnimationFrame(Timer);
+    }
+
+    if(isFirstLoop){
+        isFirstLoop=false;
+        nextTime = time;
+    }
+    
+    let elapsedTime = time - nextTime;
+    if(elapsedTime>100) {
+        nextTime = time;
+        maze.drawWall(vec[count][0], vec[count][1], vec[count][2]);
+        count++;
+        if(count >= vec.length) {
+            finished = true;
+        }
+    }
+}
+
+
+
+
+
+
 document.addEventListener("DOMContentLoaded", SetupCanvas);
 document.addEventListener("keydown", keyHandler);
 
@@ -29,6 +62,8 @@ function SetupCanvas() { //main
     ctx = canvas.getContext("2d");
     canvas.height = cellSize * mazeHeight;
     canvas.width = cellSize * mazeWidth;
+
+    requestAnimationFrame(Timer);
 
     /*
     maze = new Maze(mazeHeight, mazeWidth);
@@ -66,20 +101,41 @@ class Maze {
     generate() {
         this.kruskalAlgorithm();
 
+        var vec2 = new Array();
         for(let i = 0; i < this.positions.length; ++i) {
             for(let j = 0; j < this.positions[i].length; ++j) {
 
                 if(this.positions[i][j]["N"] == 0) {
-                    this.drawWall(i, j, "N");
+                    vec2.push(i);
+                    vec2.push(j);
+                    vec2.push("N");
+                    vec.push(vec2);
+                    vec2 = new Array();
+                    //this.drawWall(i, j, "N");
                 }
                 if(this.positions[i][j]["E"] == 0) {
-                    this.drawWall(i, j, "E");
+                    vec2.push(i);
+                    vec2.push(j);
+                    vec2.push("E");
+                    vec.push(vec2);
+                    vec2 = new Array();
+                    //this.drawWall(i, j, "E");
                 }
                 if(this.positions[i][j]["S"] == 0) {
-                    this.drawWall(i, j, "S");
+                    vec2.push(i);
+                    vec2.push(j);
+                    vec2.push("S");
+                    vec.push(vec2);
+                    vec2 = new Array();
+                    //this.drawWall(i, j, "S");
                 }
                 if(this.positions[i][j]["W"] == 0) {
-                    this.drawWall(i, j, "W");
+                    vec2.push(i);
+                    vec2.push(j);
+                    vec2.push("W");
+                    vec.push(vec2);
+                    vec2 = new Array();
+                    //this.drawWall(i, j, "W");
                 }
             }
         }
