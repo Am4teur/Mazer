@@ -3,8 +3,8 @@ let ctx;
 
 /* Customized variables */
 let cellSize = 50;
-let mazeHeight = 20;
-let mazeWidth = 20;
+let mazeHeight = 10;
+let mazeWidth = 10;
 /* ____________________ */
 let x1 = cellSize/10;
 let y1 = cellSize/10;
@@ -14,10 +14,7 @@ let y2 = cellSize - (cellSize/10)*2;
 let oppx = {"N": 0, "E": 1, "S": 0, "W": -1};
 let oppy = {"N": -1, "E": 0, "S": 1, "W": 0};
 let opp = {"N": "S", "E": "W", "S": "N", "W": "E"};
-/* using the x,y major order (or Column major order) != from memory and C (Row major order) */
-let positions = [...Array(mazeWidth)].map(e => Array(mazeHeight).fill(0));
-let set = [...Array(mazeWidth)].map(e => Array(mazeHeight).fill(0));
-let edges = new Array();
+
 
 let maze; //do not like this
 let icon; //do not like this
@@ -40,56 +37,51 @@ function SetupCanvas() { //main
     icon.init();
     */
 
-    initPos();
-    initSet();
-    initEdges();
-
     maze = new Maze(mazeHeight, mazeWidth);
     maze.generate();
-    icon = new Icon();
+    icon = new Icon(maze);
     icon.drawIcon();
 }
 
 /*_____________________ Classes _______________________*/
 class Maze {
     constructor(height, width) {
-        this.height = height;
-        this.width = width;
+        this.maze_height = height;
+        this.maze_width = width;
         
-        /* TODO */
-        this.positionsx;
-        this.setx;
-        this.edgesx;
+        /* init var positions */
+        /* using the x,y major order (or Column major order) != from memory and C (Row major order) */
+        this.positions = [...Array(this.maze_width)].map(e => Array(this.maze_height));
+        this.initPositions();
+
+        /* init var set */
+        this.set = [...Array(mazeWidth)].map(e => Array(mazeHeight));
+        this.initSet();
+
+        /* init var edges */
+        this.edges = new Array();
+        this.initEdges();
     }
 
     generate() {
         this.kruskalAlgorithm();
-        
-        for(let i = 0; i < positions.length; ++i) {
-            for(let j = 0; j < positions[i].length; ++j) {
 
-                if(positions[i][j]["N"] == 0) {
+        for(let i = 0; i < this.positions.length; ++i) {
+            for(let j = 0; j < this.positions[i].length; ++j) {
+
+                if(this.positions[i][j]["N"] == 0) {
                     this.drawWall(i, j, "N");
                 }
-                if(positions[i][j]["E"] == 0) {
+                if(this.positions[i][j]["E"] == 0) {
                     this.drawWall(i, j, "E");
                 }
-                if(positions[i][j]["S"] == 0) {
+                if(this.positions[i][j]["S"] == 0) {
                     this.drawWall(i, j, "S");
                 }
-                if(positions[i][j]["W"] == 0) {
+                if(this.positions[i][j]["W"] == 0) {
                     this.drawWall(i, j, "W");
                 }
             }
-        }
-    }
-
-    clean() {
-        for(let i = 0; i < this.height; ++i) {
-
-        }
-        for(let i = 0; i < this.width; ++i) {
-
         }
     }
 
@@ -115,7 +107,7 @@ class Maze {
                 ctx.lineTo(cellSize*x, cellSize*(y+1) +1);
                 break;
             default:
-                console.log("HOW?")
+                console.log("HOW!?");
                 break;
         }
         ctx.stroke();
@@ -123,24 +115,24 @@ class Maze {
 
     kruskalAlgorithm() {
         let x, y, ox, oy, set1, set2;
-        for(let i = 0; i < edges.length; ++i) {
-            x = edges[i].x;
-            y = edges[i].y;
-            ox = edges[i].x + oppx[edges[i].dir];
-            oy = edges[i].y + oppy[edges[i].dir];
+        for(let i = 0; i < this.edges.length; ++i) {
+            x = this.edges[i].x;
+            y = this.edges[i].y;
+            ox = this.edges[i].x + oppx[this.edges[i].dir];
+            oy = this.edges[i].y + oppy[this.edges[i].dir];
     
-            set1 = set[x][y];
-            set2 = set[ox][oy];
+            set1 = this.set[x][y];
+            set2 = this.set[ox][oy];
             if(!(set1.connected(set2))) {
                 set1.connect(set2);
-                positions[x][y][edges[i].dir] = 1;
-                positions[ox][oy][opp[edges[i].dir]] = 1;
+                this.positions[x][y][this.edges[i].dir] = 1;
+                this.positions[ox][oy][opp[this.edges[i].dir]] = 1;
             }
         }
     }
 
     checkWinner() {
-        if(icon.x == maze.width-1 && icon.y == maze.height-1) {
+        if(icon.x == this.positions.length-1 && icon.y == this.positions[0].length-1) {
             document.getElementById("win").innerHTML = "Winner";
             // pop up message: "winner"
             // delay
@@ -150,6 +142,36 @@ class Maze {
         }
         else
             document.getElementById("win").innerHTML = "";
+    }
+
+    initPositions() {
+        for(let i = 0; i < this.positions.length; ++i) {
+            for(let j = 0; j < this.positions[i].length; ++j) {
+                this.positions[i][j] = {"N": 0, "E": 0, "S": 0, "W": 0};
+            }
+        }
+    }
+
+    initSet() {
+        for(var i = 0; i < this.set.length; ++i) {
+            for(var j = 0; j < this.set[i].length; ++j) {
+                this.set[i][j] = new Tree;
+            }
+        }
+    }
+
+    initEdges() {
+        for(var i = 0; i < this.positions.length; ++i) {
+            for(let j = 0; j < this.positions[i].length; ++j) {
+                if(j>0) {
+                    this.edges.push(new Edge(i, j, "N"));
+                }
+                if(i>0) {
+                    this.edges.push(new Edge(i, j, "W"));
+                }
+            }
+        }
+        this.edges.shuffle();
     }
 }
 
@@ -188,9 +210,10 @@ class Edge {
 
 
 class Icon {
-    constructor() {
+    constructor(myMaze) {
         this.x = 0;
         this.y = 0;
+        this.myMaze = myMaze;
     }
 
     moveIcon() {
@@ -212,7 +235,7 @@ class Icon {
     }
 
     move(dir){
-        if(positions[this.x][this.y][dir]) {
+        if(myMaze.positions[this.x][this.y][dir]) {
             this.deleteIcon();
             this.x += oppx[dir];
             this.y += oppy[dir];
@@ -223,36 +246,6 @@ class Icon {
 }
 
 /*_____________________ Functions _______________________*/
-function initPos() {
-    for(var i = 0; i < positions.length; ++i) {
-        for(var j = 0; j < positions[i].length; ++j) {
-            positions[i][j] = {"N": 0, "E": 0, "S": 0, "W": 0};
-        }
-    }
-}
-
-function initSet() {
-    for(var i = 0; i < set.length; ++i) {
-        for(var j = 0; j < set[i].length; ++j) {
-            set[i][j] = new Tree;
-        }
-    }
-}
-
-function initEdges() {
-    for(var i = 0; i < positions.length; ++i) {
-        for(let j = 0; j < positions[i].length; ++j) {
-            if(j>0) {
-                edges.push(new Edge(i, j, "N"));
-            }
-            if(i>0) {
-                edges.push(new Edge(i, j, "W"));
-            }
-        }
-    }
-    edges.shuffle();
-}
-
 Array.prototype.shuffle = function() {
     let m = this.length;
     let i;
@@ -266,24 +259,31 @@ Array.prototype.shuffle = function() {
 
 function keyHandler(e) {
     switch (e.keyCode) {
-        case 37:
-            //icon.moveLeft();
+        case 37: //left
             icon.move("W");
             break;
-        case 38:
-            //icon.moveUp();
+        case 38: //up
             icon.move("N");
             break;
-        case 39:
-            //icon.moveRight();
+        case 39: //right
             icon.move("E");
             break;
-        case 40:
-            //icon.moveDown();
+        case 40: //down
             icon.move("S");
             break;
         default:
-            console.log("No function for that key");
+            //console.log("No function for that key");
             break;
     }
 };
+
+/*
+                var newt = (new Date()).getTime();
+                var step = (new Date()).getTime() + 1000;
+                console.log("(" + i + ", " + j + ") newt: " + newt);
+                console.log("(" + i + ", " + j + ") step: " + step);
+
+                while(step > newt) {
+                    newt = (new Date()).getTime();
+                }
+*/
