@@ -2,30 +2,27 @@ let canvas;
 let ctx;
 
 /* Customized variables */
-let cellSize = 50;
+let cellSize = 20;
 let mazeHeight = 8;
 let mazeWidth = 8;
-/* ____________________ */
-let x1 = cellSize/10;
-let y1 = cellSize/10;
-let x2 = cellSize - (cellSize/10)*2;
-let y2 = cellSize - (cellSize/10)*2;
 
+let setpTime = 100;
+/* ____________________ */
 let oppx = {"N": 0, "E": 1, "S": 0, "W": -1};
 let oppy = {"N": -1, "E": 0, "S": 1, "W": 0};
 let opp = {"N": "S", "E": "W", "S": "N", "W": "E"};
-
 
 let maze; //do not like this
 let icon; //do not like this
 
 
+let buttonPressed = false;
+let finished = false;
+let isFirstLoop = true;
+let nextTime;
+let vec = new Array();
+let count = 0;
 
-var finished = false;
-var isFirstLoop = true;
-var nextTime;
-var vec = new Array();
-var count = 0;
 
 function Timer(time){
 
@@ -39,16 +36,30 @@ function Timer(time){
     }
     
     let elapsedTime = time - nextTime;
-    if(elapsedTime>100) {
+    if(elapsedTime > setpTime) {
         nextTime = time;
         maze.delWall(vec[count][0], vec[count][1], vec[count][2]);
         count++;
         if(count >= vec.length) {
             finished = true;
+            count = 0;
         }
     }
 }
 
+
+function stepByStep() {
+    buttonPressed = !buttonPressed;
+    finished = false;
+    count = 0;
+    SetupCanvas();
+}
+
+function redraw() {
+    finished = false;
+    count = 0;
+    SetupCanvas();
+}
 
 
 
@@ -62,8 +73,6 @@ function SetupCanvas() { //main
     ctx = canvas.getContext("2d");
     canvas.height = cellSize * mazeHeight;
     canvas.width = cellSize * mazeWidth;
-
-    requestAnimationFrame(Timer);
 
     maze = new Maze(mazeHeight, mazeWidth);
     maze.init();
@@ -93,8 +102,17 @@ class Maze {
     }
 
     init() {
+        vec = [];
         this.drawGrid();
         this.kruskalAlgorithm();
+        if(buttonPressed) {
+            console.log("xxx")
+            requestAnimationFrame(Timer);
+        }
+        else {
+            this.drawMaze();
+        }
+
     }
 
     drawGrid() { //recheckar bem as coordenadas, deu bem logo a primeira, estranho...
@@ -104,6 +122,12 @@ class Maze {
         }
         for(let i = 0; i < this.positions[0].length+1; ++i) {
             ctx.fillRect(0, cellSize*i -2, cellSize*this.positions[0].length, 4);
+        }
+    }
+
+    drawMaze(){
+        for(let i = 0; i < vec.length ; ++i) {
+            maze.delWall(vec[i][0], vec[i][1], vec[i][2]);
         }
     }
 
@@ -231,26 +255,29 @@ class Icon {
         this.x = 0;
         this.y = 0;
         this.myMaze = myMaze;
+
+        this.x1 = cellSize/10;
+        this.y1 = cellSize/10;
+        this.x2 = cellSize - (cellSize/10)*2;
+        this.y2 = cellSize - (cellSize/10)*2;
     }
 
     init() {
-        ctx.fillStyle = "black";
-        ctx.fillRect(x1+cellSize*this.x, y1+cellSize*this.y, x2, y2);
-
         ctx.fillStyle = "blue";
-        ctx.fillRect(x1, y1+cellSize, x2, y2);
+        ctx.fillRect(this.x1+cellSize*this.x, this.y1+cellSize*this.y, this.x2, this.y2);
+
+        ctx.fillStyle = "red";
+        ctx.fillRect(this.x1, this.y1+cellSize, this.x2, this.y2);
     }
 
     moveIcon() {
-        ctx.fillStyle = "black";
-        ctx.fillRect(x1, y1, x2, y2);
+        ctx.fillStyle = "blue";
+        ctx.fillRect(this.x1, this.y1, this.x2, this.y2);
     }
-
-
 
     deleteIcon() {
         ctx.fillStyle = "white";
-        ctx.fillRect(x1+cellSize*this.x, y1+cellSize*this.y, x2, y2);
+        ctx.fillRect(this.x1+cellSize*this.x, this.y1+cellSize*this.y, this.x2, this.y2);
     }
 
     move(dir){
