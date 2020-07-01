@@ -178,17 +178,16 @@ class Maze {
         }
     }
 
-    checkWinner() {
+    async checkWinner() {
         if(icon.x == this.positions.length-1 && icon.y == this.positions[0].length-1) {
-            document.getElementById("win").innerHTML = "Winner";
+            document.getElementById("win").innerHTML = "🎉 Congratulations Mazer, you Won! 🎉";
+            await new Promise(r => setTimeout(r, 3000)); // sleep for 3s => 3000ms
+            document.getElementById("win").innerHTML = "";
             // pop up message: "winner"
             // delay
             // automatically closes
             return true;
         }
-        else
-            document.getElementById("win").innerHTML = "";
-            return false;
     }
 
     initPositions() {
