@@ -3,10 +3,10 @@ let ctx;
 
 /* Customized variables */
 let cellSize = 20;
-let mazeHeight = 8;
-let mazeWidth = 8;
+let mazeHeight = 10;
+let mazeWidth = 10;
 
-let setpTime = 100;
+let stepTime = 100;
 /* ____________________ */
 let oppx = {"N": 0, "E": 1, "S": 0, "W": -1};
 let oppy = {"N": -1, "E": 0, "S": 1, "W": 0};
@@ -16,7 +16,7 @@ let maze; //do not like this
 let icon; //do not like this
 
 
-let buttonPressed = false;
+let stepOption = false;
 let finished = false;
 let isFirstLoop = true;
 let nextTime;
@@ -36,7 +36,7 @@ function Timer(time){
     }
     
     let elapsedTime = time - nextTime;
-    if(elapsedTime > setpTime) {
+    if(elapsedTime > stepTime) {
         nextTime = time;
         maze.delWall(vec[count][0], vec[count][1], vec[count][2]);
         count++;
@@ -49,16 +49,18 @@ function Timer(time){
 
 
 function stepByStep() {
-    buttonPressed = !buttonPressed;
+    stepOption = !stepOption;
+    //timer flags
     finished = false;
     count = 0;
-    SetupCanvas();
+    initGame();
 }
 
 function redraw() {
+    //timer flags
     finished = false;
     count = 0;
-    SetupCanvas();
+    initGame();
 }
 
 
@@ -74,6 +76,10 @@ function SetupCanvas() { //main
     canvas.height = cellSize * mazeHeight;
     canvas.width = cellSize * mazeWidth;
 
+    initGame();
+}
+
+function initGame() {
     maze = new Maze(mazeHeight, mazeWidth);
     maze.init();
     icon = new Icon(maze);
@@ -105,12 +111,12 @@ class Maze {
         vec = [];
         this.drawGrid();
         this.kruskalAlgorithm();
-        if(buttonPressed) {
-            console.log("xxx")
+        if(stepOption) {
             requestAnimationFrame(Timer);
         }
         else {
             this.drawMaze();
+            finished = true;
         }
 
     }
@@ -178,11 +184,11 @@ class Maze {
             // pop up message: "winner"
             // delay
             // automatically closes
-            /* reset */
-            SetupCanvas();
+            return true;
         }
         else
             document.getElementById("win").innerHTML = "";
+            return false;
     }
 
     initPositions() {
@@ -286,8 +292,10 @@ class Icon {
             this.x += oppx[dir];
             this.y += oppy[dir];
             this.init(); //check this
-            this.myMaze.checkWinner();
-            finished = false;
+            if(this.myMaze.checkWinner()){
+                this.deleteIcon();
+                redraw();
+            }
         }
     }
 }
@@ -307,16 +315,24 @@ Array.prototype.shuffle = function() {
 function keyHandler(e) {
     switch (e.keyCode) {
         case 37: //left
-            icon.move("W");
+            if(finished){
+                icon.move("W");
+            }
             break;
         case 38: //up
-            icon.move("N");
+            if(finished){
+                icon.move("N");
+            }
             break;
         case 39: //right
-            icon.move("E");
+            if(finished){
+                icon.move("E");
+            }
             break;
         case 40: //down
-            icon.move("S");
+            if(finished){
+                icon.move("S");
+            }
             break;
         default:
             //console.log("No function for that key");
