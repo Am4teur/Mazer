@@ -1,5 +1,7 @@
 $(document).ready(function(){
 
+    doSome();
+
     // function for button step by step
     $("#btn_step_by_step").click(function() {
         stepByStep();
