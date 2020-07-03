@@ -338,7 +338,8 @@ class Maze {
 
 class Icon {
     constructor(myMaze) {
-        this.id = "0fd9a13b-2b82-423b-9d21-8c8b93b9cfe0"; //uuidv4();
+        //this.id = uuidv4();
+        this.id = "0fd9a13b-2b82-423b-9d21-8c8b93b9cfe0";
         console.log("uuid: " + this.id);
         this.x = 0;
         this.y = 0;
@@ -346,6 +347,7 @@ class Icon {
 
         let colors = ["blue", "red", "green", "orange"];
         this.color = colors[Math.floor(Math.random()*4)];
+        document.getElementById("color-id").innerHTML = "Your color: " + this.color;
 
         // cellsize = 40
         // height = width = 8

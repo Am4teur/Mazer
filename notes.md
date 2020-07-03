@@ -11,8 +11,6 @@ TODO:
 
     - buttons for different actions (new functionalities)
         - new game
-        - sign in
-            - implement login action
         - best scores
         - change icon
         - ...
@@ -43,3 +41,19 @@ TODO:
 
     - (BUG) when clicking redraw and moving the icon, sometimes it draws 2 icons
         - probable solution, don't let redraw unless all is done (locks)
+    
+
+    Frontend:
+        Known bugs:
+            - When finished/Win, let icon move but not win again and again
+            - When win, icon does not reaper at the beggining (only icon draw isn't, almost all the other logic is correct, need check)
+            - Step-by-step and Redraw buttons aren't working in distributed game.
+
+
+        (DONE) - What color I am
+        - smaller icons to be able to have at least 4 icons in same place
+        
+
+    
+    Backend:
+        - Login and Sign In functionalities
