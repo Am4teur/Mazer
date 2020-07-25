@@ -584,3 +584,11 @@ function keyHandler(e) {
 function doSome() {
     console.log("doSome");
 }
+
+function gotoMazeHTML() {
+    location.href = 'maze.html';
+}
+
+function gotoAuthHTML() {
+    location.href = 'auth.html';
+}
