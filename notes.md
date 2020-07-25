@@ -43,6 +43,12 @@ TODO:
         - probable solution, don't let redraw unless all is done (locks)
     
 
+
+    Idea:
+        - Put a small icon saying beta in the spots that aren't complete.
+
+
+
     Frontend:
         Known bugs:
             - When finished/Win, let icon move but not win again and again
@@ -57,3 +63,8 @@ TODO:
     
     Backend:
         - Login and Sign In functionalities
+    
+
+
+    Money:
+        - Add ads to the website

@@ -49,28 +49,20 @@
 
     <!-- Login & Sign In -->
     <div class="login">
-        <div class="p-1"><button class="btn btn-dark" onclick="location.href = 'auth.html';">Sign Up</button></div>
-        <div class="p-1"><button class="btn btn-dark">Login</button></div>
+      <div class="p-1"><button class="btn btn-dark" onclick="location.href = 'auth.html';">Sign Up</button></div>
+      <div class="p-1"><button class="btn btn-dark">Sign In</button></div>
     </div>
 
 </nav>
 
-<div class="headers">
-	<h1>Mazer</h1>
-    <h3>Complete the maze by collecting the cup 🏆</h3>
-    <p id="color-id">Your color: </p>
-    <p>Use your arrow keys to move</p>
-</div>
 
-<div class="maze">
-    <canvas id="myCanvas" style="border:2px solid black;"></canvas>
+<!-- The surrounding HTML is left untouched by FirebaseUI.
+     Your app may use that space for branding, controls and other customizations.-->
+     <h1>Welcome to My Awesome App</h1>
+     <div id="firebaseui-auth-container"></div>
+     <div id="loader">Loading...</div>
+     
 
-    <br></br>
-    <button class="btn btn-dark" onclick="stepByStep();">Step-by-step</button>
-    <button class="btn btn-dark" onclick="redraw();">Redraw</button>
-
-    <h1 id="win"></h1>
-</div>
 
 </body>
 </html>
