@@ -22,7 +22,7 @@ var ui = new firebaseui.auth.AuthUI(firebase.auth());
 var uiConfig = {
     callbacks: {
       signInSuccessWithAuthResult: function(authResult, redirectUrl) {
-        // User successfully signed in.
+        // user successfully signed in.
         // Return type determines whether we continue the redirect automatically
         // or whether we leave that to developer to handle.
         return true;
@@ -35,9 +35,9 @@ var uiConfig = {
     },
     // Will use popup for IDP Providers sign-in flow instead of the default, redirect.
     signInFlow: 'popup',
-    signInSuccessUrl: '<url-to-redirect-to-on-success>',
+    signInSuccessUrl: 'maze.html',
     signInOptions: [
-      // Leave the lines as is for the providers you want to offer your users.
+      // Leave the lines as is for the providers you want to offer your user.
       firebase.auth.EmailAuthProvider.PROVIDER_ID,
       firebase.auth.GithubAuthProvider.PROVIDER_ID,
       firebase.auth.GoogleAuthProvider.PROVIDER_ID,
@@ -54,40 +54,36 @@ var uiConfig = {
 
 // The start method will wait until the DOM is loaded.
 ui.start('#firebaseui-auth-container', uiConfig);
-  
+
+var user;
+var name, email, photoUrl, uid, emailVerified;
+firebase.auth().onAuthStateChanged(function(userArg) {
+    if (userArg) {
+        user = userArg;
+
+        if (userArg != null) {
+        name = userArg.displayName;
+        email = userArg.email;
+        photoUrl = userArg.photoURL;
+        emailVerified = userArg.emailVerified;
+        uid = userArg.uid;  // The user's ID, unique to the Firebase project. Do NOT use
+                        // this value to authenticate with your backend server, if
+                        // you have one. Use user.getToken() instead.
+        }
+
+    } else {
+        console.log('No user Logged in..');
+    }
+});
+
 
 
 
 /**********************************************************
  * Firestore aka DB write, reads and updates
  **********************************************************/
-function writeData() {
-    docRef.add({
-        x: 0,
-        y: 0
-    })
-    .then(function(docRef) {
-        console.log("Document written with ID: ", docRef.id);
-    })
-    .catch(function(error) {
-        console.error("Error adding document: ", error);
-    });
-}
-
-function readData() {
-    docRef.get().then(function (qSnap) {
-        qSnap.forEach(docSnapshot => {
-            if(docSnapshot) {
-                const myData = docSnapshot.data();
-                console.log("x: " + myData.x);
-                console.log(myData)
-            }
-        });
-    });
-}
-
 getRealTimeUpdates = function() {
-    db.collection("usersPosition")
+    db.collection("userPosition")
     .onSnapshot(function (qSnap) {
         qSnap.forEach(docSnapshot => {
             if(docSnapshot) {
@@ -107,7 +103,6 @@ getRealTimeUpdates = function() {
     });
 
 }
-
 
 function initMazeAndIcon() {
     // read maze state from DB
@@ -386,7 +381,7 @@ class Maze {
 class Icon {
     constructor(myMaze) {
         //this.id = uuidv4();
-        this.id = "0fd9a13b-2b82-423b-9d21-8c8b93b9cfe0";
+        this.id = user.uid;
         console.log("uuid: " + this.id);
         this.x = 0;
         this.y = 0;
@@ -467,9 +462,6 @@ class Icon {
         .catch(function(error) {
             console.error("Error adding document: ", error);
         });
-
-        //this.id = id;
-        console.log("my id is: " + this.id);
     }
     
     updateDBIconPosition(dir) {
@@ -573,6 +565,8 @@ function keyHandler(e) {
             break;
         case 40: //down
             icon.move("S");
+            console.log(user.uid);
+            console.log(name);
             break;
         default:
             //console.log("No function for that key");
